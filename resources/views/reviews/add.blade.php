@@ -22,7 +22,7 @@
             </ul>
         </div>
     @endif
-    <form method="post" action="{{ url('add_review_action') }}">
+    <form method="post" action="{{ url('review/add/action') }}">
         {{ csrf_field() }}
         <input type="hidden" name="item_id" value={{ $item_id }}>
         <div>
@@ -35,12 +35,10 @@
         </div><br>
         <div>
             <label for="review">Review:</label>
-            <textarea name="review"
-                required>{{ old('review') }}</textarea>
+            <textarea name="review" required>{{ old('review') }}</textarea>
         </div><br>
         <div>
-            <input type="submit"
-                value="Add Review"></input>
-            </div>
-        </form>
+            <input type="submit" value="Add Review"></input>
+        </div>
+    </form>
 @endsection

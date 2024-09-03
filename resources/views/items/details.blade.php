@@ -29,7 +29,6 @@
     @else
         <p>No reviews for this item.</p>
     @endif
-    <a href="{{ url("item/$item->id/add_review") }}">Add Review</a><br>
-    <a href="{{ url("delete_item_action/$item->id") }}">Delete Item</a><br>
-    <a href="{{ url("item_update/$item->id") }}">Update Item</a><br>
+    <a href="{{ url("review/add/$item->id") }}">Add Review</a><br>
+    <a href="{{ url("item/$item->id/delete") }}">Delete Item</a><br>
 @endsection

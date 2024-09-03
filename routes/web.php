@@ -5,14 +5,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     $sql = "select * from item";
     $items = DB::select($sql);
-    return view('items.item_list')->with('items', $items);
+    return view('items.list')->with('items', $items);
 });
 
 Route::get('item/{id}', function ($id) {
     $item = get_item($id);
     $manufacturer = get_item_manufacturer($item->manufacturer_id);
     $reviews = get_item_reviews($id);
-    return view('items.item_details')->with('item', $item)->with('manufacturer', $manufacturer)->with('reviews', $reviews);
+    return view('items.details')->with('item', $item)->with('manufacturer', $manufacturer)->with('reviews', $reviews);
 });
 
 function get_item($id)
@@ -44,11 +44,11 @@ function get_item_reviews($id)
     return $reviews;
 }
 
-Route::get('add_item', function () {
-    return view('items.add_item');
+Route::get('item/add/new', function () {
+    return view('items.add');
 });
 
-Route::post('add_item_action', function () {
+Route::post('item/add/action', function () {
     $name = request('name');
     $manufacturer_name = request('manufacturer_name');
 
@@ -60,7 +60,7 @@ Route::post('add_item_action', function () {
         $errors['manufacturer_name'] = 'Manufacturer name must have more than 2 characters and cannot have the following symbols: -, _, +.';
     }
     if (count($errors) > 0) {
-        return redirect(url("/add_item"))->withErrors($errors);
+        return redirect(url("/item/add/new"))->withErrors($errors);
     }
 
     $id = add_item($name, $manufacturer_name);
@@ -94,13 +94,11 @@ function fetch_or_add_manufacturer($manufacturer_name)
     return $manufacturer_id;
 }
 
-// working
-
-Route::get('item/{id}/add_review', function ($id) {
-    return view('items.add_review')->with('item_id', $id);
+Route::get('review/add/{id}', function ($id) {
+    return view('reviews.add')->with('item_id', $id);
 });
 
-Route::post('add_review_action', function () {
+Route::post('review/add/action', function () {
     $item_id = request('item_id');
     $username = request('username');
     $rating = request('rating');
@@ -117,7 +115,7 @@ Route::post('add_review_action', function () {
         $errors['username'] = 'Username must have more than 2 characters and cannot have the following symbols: -, _, +';
     }
     if (count($errors) > 0) {
-        return redirect(url("item/$item_id/add_review"))->withErrors($errors)->withInput(['username' => $odd_num_eliminated_username, 'rating' => $rating, 'review' => $review]);
+        return redirect(url("review/add/$item_id"))->withErrors($errors)->withInput(['username' => $odd_num_eliminated_username, 'rating' => $rating, 'review' => $review]);
     }
 
     $id = add_review($item_id, $odd_num_eliminated_username, $rating, $review);
@@ -136,14 +134,14 @@ function add_review($item_id, $odd_num_eliminated_username, $rating, $review)
     return $id;
 }
 
-// working
+// item update to be deleted
 
 Route::get('item_update/{id}', function ($id) {
     $item = get_item($id);
     return view('items.item_update')->with('item', $item);
 });
 
-Route::post('update_item_action', function () {
+Route::post('item_update_action', function () {
     $id = request('id');
     $summary = request('summary');
     $details = request('details');
@@ -162,7 +160,9 @@ function update_item($id, $summary, $details)
     return $result;
 }
 
-Route::get('delete_item_action/{id}', function ($id) {
+// item update to be deleted
+
+Route::get('item/{id}/delete', function ($id) {
     $result = delete_item($id);
     if ($result) {
         return redirect(url("/"));

@@ -15,7 +15,7 @@
             </ul>
         </div>
     @endif
-    <form method="post" action="{{ url('add_item_action') }}">
+    <form method="post" action="{{ url('item/add/action') }}">
         {{ csrf_field() }}
         <div>
             <label for="name">Name:</label>
