@@ -3,10 +3,16 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    $sql = "select * from item";
-    $items = DB::select($sql);
+    $items = get_item_list();
     return view('items.list')->with('items', $items);
 });
+
+function get_item_list()
+{
+    $sql = "select item.*, count(review.id) as reviews, avg(review.rating) as avg_rating from item left join review on item.id = review.item_id group by item.id";
+    $items = DB::select($sql);
+    return $items;
+}
 
 Route::get('item/{id}', function ($id) {
     $item = get_item($id);
@@ -104,7 +110,7 @@ Route::post('review/add/action', function () {
     $rating = request('rating');
     $review = request('review');
 
-    $odd_num_eliminated_username = preg_replace('/[0-9]/', '', $username);
+    $odd_num_eliminated_username = odd_num_eliminated_username($username);
     if ($odd_num_eliminated_username !== $username) {
         $usernameModifiedMessage = "Username was changed to $odd_num_eliminated_username";
         session()->flash('username_changed', "Username was changed from '$username' to '$odd_num_eliminated_username' due to containg odd number.");
@@ -112,10 +118,16 @@ Route::post('review/add/action', function () {
 
     $errors = [];
     if (strlen($odd_num_eliminated_username) <= 2 || preg_match('/[-_+]/', $odd_num_eliminated_username)) {
-        $errors['username'] = 'Username must have more than 2 characters and cannot have the following symbols: -, _, +';
+        $errors['username'] = 'Username must have more than 2 characters and cannot have the following symbols: -, _, +.';
     }
     if (count($errors) > 0) {
         return redirect(url("review/add/$item_id"))->withErrors($errors)->withInput(['username' => $odd_num_eliminated_username, 'rating' => $rating, 'review' => $review]);
+    }
+
+    $exisiting_review = check_user_multiple_review($item_id, $username);
+    if ($exisiting_review) {
+        session()->flash('exisiting_review', 'Review already exists for this user.');
+        return redirect(url("item/$item_id"));
     }
 
     $id = add_review($item_id, $odd_num_eliminated_username, $rating, $review);
@@ -126,6 +138,30 @@ Route::post('review/add/action', function () {
     }
 });
 
+function odd_num_eliminated_username($username)
+{
+    preg_match_all('/\d+/', $username, $all_matches);
+    foreach ($all_matches[0] as $number) {
+        if ($number % 2 !== 0) {
+            $username = str_replace($number, '', $username);
+        }
+    }
+
+    return $username;
+
+}
+
+function check_user_multiple_review($item_id, $username)
+{
+    $sql = "select id from review where item_id = ? and name = ?";
+    $reviews = DB::select($sql, array($item_id, $username));
+    if ($reviews) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function add_review($item_id, $odd_num_eliminated_username, $rating, $review)
 {
     $sql = "insert into review (id, item_id, name, rating, review) values (null, ?, ?, ?, ?)";
@@ -134,33 +170,65 @@ function add_review($item_id, $odd_num_eliminated_username, $rating, $review)
     return $id;
 }
 
-// item update to be deleted
+// work
 
-Route::get('item_update/{id}', function ($id) {
-    $item = get_item($id);
-    return view('items.item_update')->with('item', $item);
+Route::get('review/{id}/edit', function ($id) {
+    $review = get_review($id);
+    return view('reviews.edit')->with('review', $review);
 });
 
-Route::post('item_update_action', function () {
+function get_review($id)
+{
+    $sql = "select * from review where id = ?";
+    $reviews = DB::select($sql, array($id));
+    if (count($reviews) != 1) {
+        die("Something has gone wrong, invalid query or result: $sql");
+    }
+    $review = $reviews[0];
+    return $review;
+}
+
+Route::post('review/edit/action', function () {
     $id = request('id');
-    $summary = request('summary');
-    $details = request('details');
-    $result = update_item($id, $summary, $details);
-    if ($result) {
-        return redirect(url("item/$id"));
+    $username = request('username');
+    $rating = request('rating');
+    $review = request('review');
+
+    $odd_num_eliminated_username = odd_num_eliminated_username($username);
+    if ($odd_num_eliminated_username !== $username) {
+        $usernameModifiedMessage = "Username was changed to $odd_num_eliminated_username";
+        session()->flash('username_changed', "Username was changed from '$username' to '$odd_num_eliminated_username' due to containg odd number.");
+    }
+
+    $errors = [];
+    if (strlen($odd_num_eliminated_username) <= 2 || preg_match('/[-_+]/', $odd_num_eliminated_username)) {
+        $errors['username'] = 'Username must have more than 2 characters and cannot have the following symbols: -, _, +';
+    }
+    if (count($errors) > 0) {
+        return redirect(url("review/$id/edit"))->withErrors($errors)->withInput(['username' => $odd_num_eliminated_username, 'rating' => $rating, 'review' => $review]);
+    }
+
+    $item_id = edit_review($id, $odd_num_eliminated_username, $rating, $review);
+    if ($id) {
+        return redirect(url("item/$item_id"));
     } else {
-        die("Error while updating item.");
+        die("Error while editing review.");
     }
 });
 
-function update_item($id, $summary, $details)
+function edit_review($id, $odd_num_eliminated_username, $rating, $review)
 {
-    $sql = "update item set summary = ?, details = ? where id = ?";
-    $result = DB::update($sql, array($summary, $details, $id));
-    return $result;
+    $sql = "update review set name = ?, rating = ?, review = ? where id = ?";
+    $result = DB::update($sql, array($odd_num_eliminated_username, $rating, $review, $id));
+    if ($result) {
+        $sql = "select item_id from review where id = ?";
+        $reviews = DB::select($sql, array($id));
+        $item_id = $reviews[0]->item_id;
+        return $item_id;
+    } else {
+        die("Error while editing review.");
+    }
 }
-
-// item update to be deleted
 
 Route::get('item/{id}/delete', function ($id) {
     $result = delete_item($id);

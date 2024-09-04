@@ -1,11 +1,11 @@
 @extends('layouts.master')
 
 @section('title')
-    Add Review
+    Edit Review
 @endsection
 
 @section('content')
-    <h3>Add Review</h3><br>
+    <h3>Edit Review</h3><br>
     @if (session('username_changed'))
         <div>
             <ul>
@@ -22,23 +22,23 @@
             </ul>
         </div>
     @endif
-    <form method="post" action="{{ url('review/add/action') }}">
+    <form method="post" action="{{ url('review/edit/action') }}">
         {{ csrf_field() }}
-        <input type="hidden" name="item_id" value={{ $item_id }}>
+        <input type="hidden" name="id" value={{ $review->id }}>
         <div>
             <label for="username">Username:</label>
-            <input type="text" name="username" required value="{{ old('username') }}">
+            <input type="text" name="username" required value="{{ old('username', $review->name) }}">
         </div><br>
         <div>
             <label for="rating">Rating:</label>
-            <input type="number" name="rating" min=1 max=5 required value="{{ old('rating') }}">
+            <input type="number" name="rating" min=1 max=5 required value="{{ old('rating', $review->rating) }}">
         </div><br>
         <div>
             <label for="review">Review:</label>
-            <textarea name="review" required>{{ old('review') }}</textarea>
+            <textarea name="review" required>{{ old('review', $review->review) }}</textarea>
         </div><br>
         <div>
-            <input type="submit" value="Add Review"></input>
+            <input type="submit" value="Edit Review"></input>
         </div>
     </form>
 @endsection

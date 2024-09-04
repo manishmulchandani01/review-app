@@ -13,6 +13,13 @@
             </ul>
         </div>
     @endif
+    @if (session('exisiting_review'))
+        <div>
+            <ul>
+                <li>{{ session('exisiting_review') }}</li>
+            </ul>
+        </div>
+    @endif
     <p><strong>Name: {{ $item->name }}</strong></p>
     <p>Manufacturer: {{ $manufacturer->name }}</p>
     <h3>Reviews</h3><br>
@@ -22,7 +29,8 @@
                 <li>
                     <strong>{{ $review->name }}</strong> ({{ $review->rating }}/5) on
                     {{ substr($review->created_at, 0, 10) }}<br>
-                    Review: {{ $review->review }}
+                    Review: {{ $review->review }}<br>
+                    <a href="{{ url("review/$review->id/edit") }}">Edit Review</a><br>
                 </li>
             @endforeach
         </ul>

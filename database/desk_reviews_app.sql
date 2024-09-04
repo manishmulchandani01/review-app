@@ -38,7 +38,6 @@ create table review (
     created_at datetime default current_timestamp,
     foreign key (item_id) references item(id) on delete cascade
 );
-
 insert into review (id, item_id, name, rating, review) values (null, 1, "Manish", 5, "What a desk; it has everything I need!");
 insert into review (id, item_id, name, rating, review) values (null, 1, "Mandy", 5, "I like it as well.");
 insert into review (id, item_id, name, rating, review) values (null, 1, "Sam", 5, "All rounder desk, this desk is all you need.");
