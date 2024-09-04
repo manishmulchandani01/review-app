@@ -51,25 +51,37 @@ function get_item_reviews($id)
 }
 
 Route::get('item/add/new', function () {
-    return view('items.add');
+    $manufacturers = get_manufacturer_list();
+    return view('items.add')->with('manufacturers', $manufacturers);
 });
+
+function get_manufacturer_list()
+{
+    $sql = "select * from manufacturer";
+    $manufacturers = DB::select($sql);
+    return $manufacturers;
+}
 
 Route::post('item/add/action', function () {
     $name = request('name');
+    $type = request('type');
+    $manufacturer_id = request('manufacturer_id');
     $manufacturer_name = request('manufacturer_name');
 
     $errors = [];
     if (strlen($name) <= 2 || preg_match('/[-_+]/', $name)) {
         $errors['name'] = 'Item name must have more than 2 characters and cannot have the following symbols: -, _, +';
     }
-    if (strlen($manufacturer_name) <= 2 || preg_match('/[-_+]/', $manufacturer_name)) {
-        $errors['manufacturer_name'] = 'Manufacturer name must have more than 2 characters and cannot have the following symbols: -, _, +.';
+    if ($type != 'existing') {
+        if (strlen($manufacturer_name) <= 2 || preg_match('/[-_+]/', $manufacturer_name)) {
+            $errors['manufacturer_name'] = 'Manufacturer name must have more than 2 characters and cannot have the following symbols: -, _, +.';
+        }
     }
     if (count($errors) > 0) {
-        return redirect(url("/item/add/new"))->withErrors($errors);
+        return redirect(url("/item/add/new"))->withErrors($errors)->withInput();
     }
 
-    $id = add_item($name, $manufacturer_name);
+    $id = add_item($name, $type, $manufacturer_id, $manufacturer_name);
     if ($id) {
         return redirect(url("item/$id"));
     } else {
@@ -77,10 +89,13 @@ Route::post('item/add/action', function () {
     }
 });
 
-function add_item($name, $manufacturer_name)
+function add_item($name, $type, $manufacturer_id, $manufacturer_name = null)
 {
-    $manufacturer_id = fetch_or_add_manufacturer($manufacturer_name);
-    $sql = "insert into item values (null, ?, ?)";
+    if ($type !== 'existing') {
+        $manufacturer_id = fetch_or_add_manufacturer($manufacturer_name);
+    }
+
+    $sql = "insert into item (manufacturer_id, name) values (?, ?)";
     DB::insert($sql, array($manufacturer_id, $name));
     $id = DB::getPdo()->lastInsertId();
     return $id;
@@ -169,8 +184,6 @@ function add_review($item_id, $odd_num_eliminated_username, $rating, $review)
     $id = DB::getPdo()->lastInsertId();
     return $id;
 }
-
-// work
 
 Route::get('review/{id}/edit', function ($id) {
     $review = get_review($id);
