@@ -22,6 +22,9 @@
     @endif
     <p><strong>Name: {{ $item->name }}</strong></p>
     <p>Manufacturer: {{ $manufacturer->name }}</p>
+    @if ($item->year)
+        <p>Year: {{ $item->year }}</p>
+    @endif
     <h3>Reviews</h3><br>
     @if (count($reviews) > 0)
         <ul>

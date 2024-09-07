@@ -67,6 +67,7 @@ Route::post('item/add/action', function () {
     $type = request('type');
     $manufacturer_id = request('manufacturer_id');
     $manufacturer_name = request('manufacturer_name');
+    $year = request('year');
 
     $errors = [];
     if (strlen($name) <= 2 || preg_match('/[-_+]/', $name)) {
@@ -77,11 +78,16 @@ Route::post('item/add/action', function () {
             $errors['manufacturer_name'] = 'Manufacturer name must have more than 2 characters and cannot have the following symbols: -, _, +.';
         }
     }
+    if ($year) {
+        if (!is_numeric($year) || $year < 2000 || $year > 2024) {
+            $errors['year'] = 'Year must be a number and between 2000 and 2024.';
+        }
+    }
     if (count($errors) > 0) {
         return redirect(url("/item/add/new"))->withErrors($errors)->withInput();
     }
 
-    $id = add_item($name, $type, $manufacturer_id, $manufacturer_name);
+    $id = add_item($name, $type, $manufacturer_id, $manufacturer_name, $year);
     if ($id) {
         return redirect(url("item/$id"));
     } else {
@@ -89,14 +95,13 @@ Route::post('item/add/action', function () {
     }
 });
 
-function add_item($name, $type, $manufacturer_id, $manufacturer_name = null)
+function add_item($name, $type, $manufacturer_id, $manufacturer_name, $year)
 {
     if ($type !== 'existing') {
         $manufacturer_id = fetch_or_add_manufacturer($manufacturer_name);
     }
-
-    $sql = "insert into item (manufacturer_id, name) values (?, ?)";
-    DB::insert($sql, array($manufacturer_id, $name));
+    $sql = "insert into item (manufacturer_id, name, year) values (?, ?, ?)";
+    DB::insert($sql, array($manufacturer_id, $name, $year));
     $id = DB::getPdo()->lastInsertId();
     return $id;
 }
@@ -139,7 +144,7 @@ Route::post('review/add/action', function () {
         return redirect(url("review/add/$item_id"))->withErrors($errors)->withInput(['username' => $odd_num_eliminated_username, 'rating' => $rating, 'review' => $review]);
     }
 
-    $exisiting_review = check_user_multiple_review($item_id, $username);
+    $exisiting_review = check_user_multiple_review($item_id, $odd_num_eliminated_username);
     if ($exisiting_review) {
         session()->flash('exisiting_review', 'Review already exists for this user.');
         return redirect(url("item/$item_id"));
@@ -161,7 +166,6 @@ function odd_num_eliminated_username($username)
             $username = str_replace($number, '', $username);
         }
     }
-
     return $username;
 
 }
@@ -171,7 +175,8 @@ function check_user_multiple_review($item_id, $username)
     $sql = "select id from review where item_id = ? and name = ?";
     $reviews = DB::select($sql, array($item_id, $username));
     if ($reviews) {
-        return true;
+        $review = $reviews[0]->id;
+        return $review;
     } else {
         return false;
     }
@@ -203,6 +208,7 @@ function get_review($id)
 
 Route::post('review/edit/action', function () {
     $id = request('id');
+    $item_id = request('item_id');
     $username = request('username');
     $rating = request('rating');
     $review = request('review');
@@ -219,6 +225,12 @@ Route::post('review/edit/action', function () {
     }
     if (count($errors) > 0) {
         return redirect(url("review/$id/edit"))->withErrors($errors)->withInput(['username' => $odd_num_eliminated_username, 'rating' => $rating, 'review' => $review]);
+    }
+
+    $exisiting_review = check_user_multiple_review($item_id, $odd_num_eliminated_username);
+    if ($exisiting_review && $exisiting_review != $id) {
+        session()->flash('exisiting_review', 'Review already exists for this user.');
+        return redirect(url("item/$item_id"));
     }
 
     $item_id = edit_review($id, $odd_num_eliminated_username, $rating, $review);

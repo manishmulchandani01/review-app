@@ -14,19 +14,20 @@ create table item (
     id integer not null primary key autoincrement,
     manufacturer_id int not null,
     name varchar(255) not null,
+    year int,
     foreign key (manufacturer_id) references manufacturer(id) on delete cascade
 ); 
-insert into item values (null, 1, "Secretlab MAGNUS Pro Desk");
-insert into item values (null, 1, "Secretlab MAGNUS Metal Desk");
-insert into item values (null, 2, "Desky Solid Timber Desk");
-insert into item values (null, 3, "Desky Dual Sit Stand Desk");
-insert into item values (null, 3, "Omnidesk Wildwood");
-insert into item values (null, 3, "Omnidesk Pro");
-insert into item values (null, 4, "Bekant Desk");
-insert into item values (null, 4, "Skarsta Sit and Stand Desk");
-insert into item values (null, 4, "Linnmon Desk");
-insert into item values (null, 5, "Stilford S2 Pro Electric Height Adjustable Desk");
-insert into item values (null, 5, "J. Burrows Matrix Desk");
+insert into item values (null, 1, "Secretlab MAGNUS Pro Desk", 2023);
+insert into item values (null, 1, "Secretlab MAGNUS Metal Desk", 2024);
+insert into item values (null, 2, "Desky Solid Timber Desk", 2022);
+insert into item values (null, 3, "Desky Dual Sit Stand Desk", 2021);
+insert into item values (null, 3, "Omnidesk Wildwood", 2023);
+insert into item values (null, 3, "Omnidesk Pro", 2024);
+insert into item values (null, 4, "Bekant Desk", 2022);
+insert into item values (null, 4, "Skarsta Sit and Stand Desk", 2019);
+insert into item values (null, 4, "Linnmon Desk", 2014);
+insert into item values (null, 5, "Stilford S2 Pro Electric Height Adjustable Desk", 2023);
+insert into item values (null, 5, "J. Burrows Matrix Desk", 2022);
 
 drop table if exists review;
 create table review (    

@@ -19,7 +19,7 @@
         {{ csrf_field() }}
         <div>
             <label for="name">Name:</label>
-            <input type="text" name="name" required value="{{ old('name') }}">
+            <input type="text" name="name" value="{{ old('name') }}">
         </div><br>
         <div>
             <label for="type">Manufacturer Type:</label>
@@ -41,6 +41,10 @@
         <div>
             <label for="manufacturer_name">New Manufacturer:</label>
             <input type="text" name="manufacturer_name" value="{{ old('manufacturer_name') }}">
+        </div><br>
+        <div>
+            <label for="name">Year (optional):</label>
+            <input type="number" name="year" value="{{ old('year') }}">
         </div><br>
         <div>
             <input type="submit" value="Add Item"></input>

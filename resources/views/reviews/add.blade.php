@@ -27,11 +27,11 @@
         <input type="hidden" name="item_id" value={{ $item_id }}>
         <div>
             <label for="username">Username:</label>
-            <input type="text" name="username" required value="{{ old('username') }}">
+            <input type="text" name="username" value="{{ old('username') }}">
         </div><br>
         <div>
             <label for="rating">Rating:</label>
-            <input type="number" name="rating" min=1 max=5 required value="{{ old('rating') }}">
+            <input type="number" name="rating" value="{{ old('rating') }}">
         </div><br>
         <div>
             <label for="review">Review:</label>
