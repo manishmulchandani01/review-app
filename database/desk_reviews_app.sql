@@ -47,3 +47,7 @@ insert into review (id, item_id, name, rating, review) values (null, 5, "Sam", 5
 insert into review (id, item_id, name, rating, review) values (null, 6, "Mark", 2, "Overrated, I do not find it sturdy and good build quality.");
 insert into review (id, item_id, name, rating, review) values (null, 8, "Mandy", 5, "Not bad, not bad at all.");
 insert into review (id, item_id, name, rating, review) values (null, 9, "Gregory", 4, "Does the job, I am happy with it.");
+insert into review (id, item_id, name, rating, review) values (null, 2, "James", 5, "Not bad, awesome!!!");
+insert into review (id, item_id, name, rating, review) values (null, 2, "Carlos", 5, "highly recommended desk, a must buy.");
+insert into review (id, item_id, name, rating, review) values (null, 3, "Carlos", 3, "SO GOOD. SO USEFULLLL!!");
+insert into review (id, item_id, name, rating, review) values (null, 3, "Manish", 3, "I have been using it from 2022 and I find it useful. I can recommend.");

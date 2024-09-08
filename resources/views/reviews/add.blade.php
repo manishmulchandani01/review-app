@@ -5,50 +5,52 @@
 @endsection
 
 @section('content')
-    <h1>Add Review</h1><br>
+    <h1 class="text-center mb-4">Add Review</h1>
     @if (session('username_changed'))
-        <div>
-            <ul>
-                <li>{{ session('username_changed') }}</li>
-            </ul>
+        <div class="alert alert-danger" role="alert">
+            {{ session('username_changed') }}
         </div>
     @endif
     @if ($errors->any())
-        <div>
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div class="alert alert-danger" role="alert">
+            @foreach ($errors->all() as $error)
+                {{ $error }}
+            @endforeach
         </div>
     @endif
-    <form method="post" action="{{ url('review/add/action') }}" onsubmit="return validateForm()">
-        {{ csrf_field() }}
-        <input type="hidden" name="item_id" value={{ $item_id }}>
-        @if (!session()->has('username'))
-            <div>
-                <label for="username">Username:</label>
-                <input type="text" name="username" value="{{ old('username') }}">
-            </div><br>
-        @else
-            <div>
-                <strong>Username: {{ session('username') }}</strong>
-            </div><br>
-        @endif
-        <div>
-            <label for="rating">Rating:</label>
-            <input type="text" id="rating" name="rating" value="{{ old('rating') }}">
-            <div id="error_rating"></div>
-        </div><br>
-        <div>
-            <label for="review">Review:</label>
-            <textarea id="review" name="review">{{ old('review') }}</textarea>
-            <div id="error_review"></div>
-        </div><br>
-        <div>
-            <input type="submit" value="Add Review"></input>
+    <div class="card shadow p-2 mb-4">
+        <div class="card-body">
+            <form method="post" action="{{ url('review/add/action') }}" onsubmit="return validateForm()">
+                {{ csrf_field() }}
+                <input type="hidden" name="item_id" value={{ $item_id }}>
+                @if (!session()->has('username'))
+                    <div class="mb-4">
+                        <label class="form-label" for="username">Username:</label>
+                        <input class="form-control" type="text" name="username" value="{{ old('username') }}">
+                    </div>
+                @else
+                    <div class="mb-4">
+                        <label class="form-label" for="username">Username:</label>
+                        <input class="form-control" type="text" readonly name="username_readonly"
+                            value="{{ session('username') }}">
+                    </div>
+                @endif
+                <div class="mb-4">
+                    <label class="form-label" for="rating">Rating:</label>
+                    <input class="form-control" type="text" id="rating" name="rating" value="{{ old('rating') }}">
+                    <div id="error_rating"></div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" for="review">Review:</label>
+                    <textarea class="form-control" id="review" name="review">{{ old('review') }}</textarea>
+                    <div id="error_review"></div>
+                </div>
+                <div class="text-center">
+                    <input type="submit" class="btn btn-success" value="Add Review"></input>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
     <script>
         function validateForm() {
             document.getElementById('error_rating').innerText = '';

@@ -50,7 +50,7 @@ function get_item_manufacturer($id)
 
 function get_item_reviews($id)
 {
-    $reasons_threshold = 2; // this threshold is for how many possible reasons needed to consider review as a fake review.
+    $reasons_threshold = 1; // this threshold is for how many possible reasons needed to consider review as a fake review.
     $sql = "select * from review where item_id = ?";
     $reviews = DB::select($sql, array($id));
     $reviews = identify_fake_reviews($reviews, $reasons_threshold);
@@ -75,6 +75,9 @@ function get_possible_reasons($review)
     if (strtoupper($review) === $review) {
         $possible_reasons[] = "All words of review are in upper case / caps";
     }
+    if (strlen($review) < 25) {
+        $possible_reasons[] = "Not enough characters in review";
+    }
     if (str_word_count($review) < 4) {
         $possible_reasons[] = "Not enough words in review";
     }
@@ -84,7 +87,7 @@ function get_possible_reasons($review)
     $banned_words = ['extremely bad', 'extremly good', 'perfect', 'bestest', 'very noice', 'awesome', 'highly recommended', 'not bad'];
     foreach ($banned_words as $banned_word) {
         if (strpos(strtolower($review), $banned_word) !== false) {
-            $possible_reasons[] = "Review contains banned word $banned_word";
+            $possible_reasons[] = "Review contains banned word '$banned_word'";
         }
     }
 
@@ -162,6 +165,15 @@ function fetch_or_add_manufacturer($manufacturer_name)
 }
 
 Route::get('review/add/{id}', function ($id) {
+    if (session()->has('username')) {
+        $item_id = $id;
+        $validated_username = session('username');
+        $exisiting_review = check_user_multiple_review($item_id, $validated_username);
+        if ($exisiting_review) {
+            session()->flash('exisiting_review', 'Review already exists for this user.');
+            return redirect(url("item/$item_id"));
+        }
+    }
     return view('reviews.add')->with('item_id', $id);
 });
 
@@ -332,7 +344,7 @@ Route::get('manufacturers/{id}', function ($id) {
 
 function get_manufacturer($id)
 {
-    $sql = "select * from manufacturer where id = ?";
+    $sql = "SELECT manufacturer.*, avg(review.rating) as avg_rating from manufacturer left join item on manufacturer.id = item.manufacturer_id left join review on item.id = review.item_id where manufacturer.id = ?";
     $manufactures = DB::select($sql, array($id));
     if (count($manufactures) != 1) {
         die("Something has gone wrong, invalid query or result: $sql");
