@@ -38,12 +38,12 @@
                 <div class="mb-4">
                     <label class="form-label" for="rating">Rating:</label>
                     <input class="form-control" type="text" id="rating" name="rating" value="{{ old('rating') }}">
-                    <div id="error_rating"></div>
+                    <div class="text-danger" id="error_rating"></div>
                 </div>
                 <div class="mb-4">
                     <label class="form-label" for="review">Review:</label>
                     <textarea class="form-control" id="review" name="review">{{ old('review') }}</textarea>
-                    <div id="error_review"></div>
+                    <div class="text-danger" id="error_review"></div>
                 </div>
                 <div class="text-center">
                     <input type="submit" class="btn btn-success" value="Add Review"></input>
