@@ -20,7 +20,7 @@ create table item (
 insert into item values (null, 1, "Secretlab MAGNUS Pro Desk", 2023);
 insert into item values (null, 1, "Secretlab MAGNUS Metal Desk", 2024);
 insert into item values (null, 2, "Desky Solid Timber Desk", 2022);
-insert into item values (null, 3, "Desky Dual Sit Stand Desk", 2021);
+insert into item values (null, 2, "Desky Dual Sit Stand Desk", 2021);
 insert into item values (null, 3, "Omnidesk Wildwood", 2023);
 insert into item values (null, 3, "Omnidesk Pro", 2024);
 insert into item values (null, 4, "Bekant Desk", 2022);

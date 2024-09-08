@@ -28,6 +28,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url('/item/add/new') }}">Add Item</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url('/manufacturers') }}">Manufacturers</a>
+                    </li>
                 </ul>
             </div>
         </div>

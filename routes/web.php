@@ -11,9 +11,9 @@ Route::get('/', function () {
 
 function get_item_list($sort_by, $order_by)
 {
-    $sort_by === 'avg_arting' ? 'avg_rating' : 'reviews';
-    $order_by === 'asc' ? 'asc' : 'desc';
-    $sql = "select item.*, count(review.id) as reviews, avg(review.rating) as avg_rating from item left join review on item.id = review.item_id group by item.id order by $sort_by $order_by";
+    $sort_by_sql = $sort_by === 'avg_rating' ? 'avg_rating' : 'reviews';
+    $order_by_sql = $order_by === 'asc' ? 'asc' : 'desc';
+    $sql = "select item.*, count(review.id) as reviews, avg(review.rating) as avg_rating from item left join review on item.id = review.item_id group by item.id order by $sort_by_sql $order_by_sql";
     $items = DB::select($sql);
     return $items;
 }
@@ -61,7 +61,7 @@ Route::get('item/add/new', function () {
 
 function get_manufacturer_list()
 {
-    $sql = "select * from manufacturer";
+    $sql = "SELECT manufacturer.*, avg(review.rating) as avg_rating from manufacturer left join item on manufacturer.id = item.manufacturer_id left join review on item.id = review.item_id group by manufacturer.id";
     $manufacturers = DB::select($sql);
     return $manufacturers;
 }
@@ -273,4 +273,33 @@ function delete_item($id)
     $sql = "delete from item where id = ?";
     $result = DB::delete($sql, array($id));
     return $result;
+}
+
+Route::get('/manufacturers', function () {
+    $manufacturers = get_manufacturer_list();
+    return view('manufacturers.list')->with('manufacturers', $manufacturers);
+});
+
+Route::get('manufacturers/{id}', function ($id) {
+    $manufacturer = get_manufacturer($id);
+    $items = get_manufacturer_item_list($id);
+    return view('manufacturers.details')->with('manufacturer', $manufacturer)->with('items', $items);
+});
+
+function get_manufacturer($id)
+{
+    $sql = "select * from manufacturer where id = ?";
+    $manufactures = DB::select($sql, array($id));
+    if (count($manufactures) != 1) {
+        die("Something has gone wrong, invalid query or result: $sql");
+    }
+    $manufacturer = $manufactures[0];
+    return $manufacturer;
+}
+
+function get_manufacturer_item_list($id)
+{
+    $sql = "select item.*, avg(review.rating) as avg_rating from item left join review on item.id = review.item_id where item.manufacturer_id = ? group by item.id";
+    $items = DB::select($sql, array($id));
+    return $items;
 }

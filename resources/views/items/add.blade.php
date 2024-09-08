@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    <h3>Add Item</h3><br>
+    <h1>Add Item</h1><br>
     @if ($errors->any())
         <div>
             <ul>

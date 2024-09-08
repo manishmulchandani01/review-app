@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    <h3>Edit Review</h3><br>
+    <h1>Edit Review</h1><br>
     @if (session('username_changed'))
         <div>
             <ul>

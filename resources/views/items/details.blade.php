@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    <h3>Item Details</h3><br>
+    <h1>Item Details</h1><br>
     @if (session('username_changed'))
         <div>
             <ul>
@@ -25,7 +25,7 @@
     @if ($item->year)
         <p>Year: {{ $item->year }}</p>
     @endif
-    <h3>Reviews</h3><br>
+    <h1>Reviews</h1><br>
     @if (count($reviews) > 0)
         <ul>
             @foreach ($reviews as $review)
