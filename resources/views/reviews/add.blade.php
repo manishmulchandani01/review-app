@@ -25,17 +25,23 @@
     <form method="post" action="{{ url('review/add/action') }}">
         {{ csrf_field() }}
         <input type="hidden" name="item_id" value={{ $item_id }}>
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" name="username" value="{{ old('username') }}">
-        </div><br>
+        @if (!session()->has('username'))
+            <div>
+                <label for="username">Username:</label>
+                <input type="text" name="username" value="{{ old('username') }}">
+            </div><br>
+        @else
+            <div>
+                <strong>Username: {{ session('username') }}</strong>
+            </div><br>
+        @endif
         <div>
             <label for="rating">Rating:</label>
             <input type="number" name="rating" value="{{ old('rating') }}">
         </div><br>
         <div>
             <label for="review">Review:</label>
-            <textarea name="review" required>{{ old('review') }}</textarea>
+            <textarea name="review">{{ old('review') }}</textarea>
         </div><br>
         <div>
             <input type="submit" value="Add Review"></input>

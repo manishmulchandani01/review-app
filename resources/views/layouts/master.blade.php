@@ -31,6 +31,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url('/manufacturers') }}">Manufacturers</a>
                     </li>
+                    @if (session()->has('username'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url('/forget_session') }}">Forget Session</a>
+                        </li>
+                    @endif
                 </ul>
             </div>
         </div>

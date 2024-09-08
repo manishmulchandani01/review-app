@@ -130,7 +130,11 @@ Route::get('review/add/{id}', function ($id) {
 
 Route::post('review/add/action', function () {
     $item_id = request('item_id');
-    $username = request('username');
+    if (session()->has('username')) {
+        $username = session('username');
+    } else {
+        $username = request('username');
+    }
     $rating = request('rating');
     $review = request('review');
 
@@ -156,6 +160,9 @@ Route::post('review/add/action', function () {
 
     $id = add_review($item_id, $odd_num_eliminated_username, $rating, $review);
     if ($id) {
+        if (!session()->has('username')) {
+            session(['username' => $odd_num_eliminated_username]);
+        }
         return redirect(url("item/$item_id"));
     } else {
         die("Error while adding item.");
@@ -303,3 +310,12 @@ function get_manufacturer_item_list($id)
     $items = DB::select($sql, array($id));
     return $items;
 }
+
+Route::get('/forget_session', function () {
+    if (session()->has('username')) {
+        session()->forget('username');
+        return redirect(url("/"));
+    } else {
+        die("Error while forgetting session. Session does not exists.");
+    }
+});
