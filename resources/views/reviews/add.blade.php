@@ -22,7 +22,7 @@
             </ul>
         </div>
     @endif
-    <form method="post" action="{{ url('review/add/action') }}">
+    <form method="post" action="{{ url('review/add/action') }}" onsubmit="return validateForm()">
         {{ csrf_field() }}
         <input type="hidden" name="item_id" value={{ $item_id }}>
         @if (!session()->has('username'))
@@ -37,14 +37,34 @@
         @endif
         <div>
             <label for="rating">Rating:</label>
-            <input type="number" name="rating" value="{{ old('rating') }}">
+            <input type="text" id="rating" name="rating" value="{{ old('rating') }}">
+            <div id="error_rating"></div>
         </div><br>
         <div>
             <label for="review">Review:</label>
-            <textarea name="review">{{ old('review') }}</textarea>
+            <textarea id="review" name="review">{{ old('review') }}</textarea>
+            <div id="error_review"></div>
         </div><br>
         <div>
             <input type="submit" value="Add Review"></input>
         </div>
     </form>
+    <script>
+        function validateForm() {
+            document.getElementById('error_rating').innerText = '';
+            document.getElementById('error_review').innerText = '';
+            const rating = document.getElementById('rating').value;
+            const review = document.getElementById('review').value;
+            let isValid = true;
+            if (rating < 1 || rating > 5 || isNaN(rating)) {
+                document.getElementById('error_rating').innerText = 'Rating must be a number and between 1 to 5.';
+                isValid = false;
+            }
+            if ((review.trim().split(' ').filter(word => word.length > 0)).length < 3) {
+                document.getElementById('error_review').innerText = 'Review must contain more than 3 words.';
+                isValid = false;
+            }
+            return isValid;
+        }
+    </script>
 @endsection

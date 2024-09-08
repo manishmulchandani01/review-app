@@ -50,7 +50,7 @@ function get_item_manufacturer($id)
 
 function get_item_reviews($id)
 {
-    $reasons_threshold = 1; // this threshold is for how many possible reasons needed to consider review as a fake review.
+    $reasons_threshold = 2; // this threshold is for how many possible reasons needed to consider review as a fake review.
     $sql = "select * from review where item_id = ?";
     $reviews = DB::select($sql, array($id));
     $reviews = identify_fake_reviews($reviews, $reasons_threshold);
@@ -81,7 +81,7 @@ function get_possible_reasons($review)
     if (substr_count($review, '!') >= 2) {
         $possible_reasons[] = "More than two '!' / exclamation mark";
     }
-    $banned_words = ['extremely bad', 'extremly good', 'perfect', 'bestest', 'very noice', 'awesome', 'highly recommended'];
+    $banned_words = ['extremely bad', 'extremly good', 'perfect', 'bestest', 'very noice', 'awesome', 'highly recommended', 'not bad'];
     foreach ($banned_words as $banned_word) {
         if (strpos(strtolower($review), $banned_word) !== false) {
             $possible_reasons[] = "Review contains banned word $banned_word";
