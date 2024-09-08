@@ -3,13 +3,17 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    $items = get_item_list();
+    $sort_by = request('sort_by', 'reviews');
+    $order_by = request('order_by', 'desc');
+    $items = get_item_list($sort_by, $order_by);
     return view('items.list')->with('items', $items);
 });
 
-function get_item_list()
+function get_item_list($sort_by, $order_by)
 {
-    $sql = "select item.*, count(review.id) as reviews, avg(review.rating) as avg_rating from item left join review on item.id = review.item_id group by item.id";
+    $sort_by === 'avg_arting' ? 'avg_rating' : 'reviews';
+    $order_by === 'asc' ? 'asc' : 'desc';
+    $sql = "select item.*, count(review.id) as reviews, avg(review.rating) as avg_rating from item left join review on item.id = review.item_id group by item.id order by $sort_by $order_by";
     $items = DB::select($sql);
     return $items;
 }
