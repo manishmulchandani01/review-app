@@ -22,6 +22,7 @@ Route::get('item/{id}', function ($id) {
     $item = get_item($id);
     $manufacturer = get_item_manufacturer($item->manufacturer_id);
     $reviews = get_item_reviews($id);
+    // dd($reviews);
     return view('items.details')->with('item', $item)->with('manufacturer', $manufacturer)->with('reviews', $reviews);
 });
 
@@ -49,9 +50,45 @@ function get_item_manufacturer($id)
 
 function get_item_reviews($id)
 {
+    $reasons_threshold = 1; // this threshold is for how many possible reasons needed to consider review as a fake review.
     $sql = "select * from review where item_id = ?";
     $reviews = DB::select($sql, array($id));
+    $reviews = identify_fake_reviews($reviews, $reasons_threshold);
     return $reviews;
+}
+
+function identify_fake_reviews($reviews, $reasons_threshold)
+{
+    foreach ($reviews as $review) {
+        $possible_reasons = get_possible_reasons($review->review);
+        if (count($possible_reasons) >= $reasons_threshold) {
+            $review->possible_reasons = $possible_reasons;
+        }
+    }
+    return $reviews;
+}
+
+function get_possible_reasons($review)
+{
+    $possible_reasons = [];
+
+    if (strtoupper($review) === $review) {
+        $possible_reasons[] = "All words of review are in upper case / caps";
+    }
+    if (str_word_count($review) < 4) {
+        $possible_reasons[] = "Not enough words in review";
+    }
+    if (substr_count($review, '!') >= 2) {
+        $possible_reasons[] = "More than two '!' / exclamation mark";
+    }
+    $banned_words = ['extremely bad', 'extremly good', 'perfect', 'bestest', 'very noice', 'awesome', 'highly recommended'];
+    foreach ($banned_words as $banned_word) {
+        if (strpos(strtolower($review), $banned_word) !== false) {
+            $possible_reasons[] = "Review contains banned word $banned_word";
+        }
+    }
+
+    return $possible_reasons;
 }
 
 Route::get('item/add/new', function () {
@@ -138,30 +175,30 @@ Route::post('review/add/action', function () {
     $rating = request('rating');
     $review = request('review');
 
-    $odd_num_eliminated_username = odd_num_eliminated_username($username);
-    if ($odd_num_eliminated_username !== $username) {
-        $usernameModifiedMessage = "Username was changed to $odd_num_eliminated_username";
-        session()->flash('username_changed', "Username was changed from '$username' to '$odd_num_eliminated_username' due to containg odd number.");
+    $validated_username = remove_odd_number($username);
+    if ($validated_username !== $username) {
+        $usernameModifiedMessage = "Username was changed to $validated_username";
+        session()->flash('username_changed', "Username was changed from '$username' to '$validated_username' due to containg odd number.");
     }
 
     $errors = [];
-    if (strlen($odd_num_eliminated_username) <= 2 || preg_match('/[-_+]/', $odd_num_eliminated_username)) {
+    if (strlen($validated_username) <= 2 || preg_match('/[-_+]/', $validated_username)) {
         $errors['username'] = 'Username must have more than 2 characters and cannot have the following symbols: -, _, +.';
     }
     if (count($errors) > 0) {
-        return redirect(url("review/add/$item_id"))->withErrors($errors)->withInput(['username' => $odd_num_eliminated_username, 'rating' => $rating, 'review' => $review]);
+        return redirect(url("review/add/$item_id"))->withErrors($errors)->withInput(['username' => $validated_username, 'rating' => $rating, 'review' => $review]);
     }
 
-    $exisiting_review = check_user_multiple_review($item_id, $odd_num_eliminated_username);
+    $exisiting_review = check_user_multiple_review($item_id, $validated_username);
     if ($exisiting_review) {
         session()->flash('exisiting_review', 'Review already exists for this user.');
         return redirect(url("item/$item_id"));
     }
 
-    $id = add_review($item_id, $odd_num_eliminated_username, $rating, $review);
+    $id = add_review($item_id, $validated_username, $rating, $review);
     if ($id) {
         if (!session()->has('username')) {
-            session(['username' => $odd_num_eliminated_username]);
+            session(['username' => $validated_username]);
         }
         return redirect(url("item/$item_id"));
     } else {
@@ -169,7 +206,7 @@ Route::post('review/add/action', function () {
     }
 });
 
-function odd_num_eliminated_username($username)
+function remove_odd_number($username)
 {
     preg_match_all('/\d+/', $username, $all_matches);
     foreach ($all_matches[0] as $number) {
@@ -193,10 +230,10 @@ function check_user_multiple_review($item_id, $username)
     }
 }
 
-function add_review($item_id, $odd_num_eliminated_username, $rating, $review)
+function add_review($item_id, $validated_username, $rating, $review)
 {
     $sql = "insert into review (id, item_id, name, rating, review) values (null, ?, ?, ?, ?)";
-    DB::insert($sql, array($item_id, $odd_num_eliminated_username, $rating, $review));
+    DB::insert($sql, array($item_id, $validated_username, $rating, $review));
     $id = DB::getPdo()->lastInsertId();
     return $id;
 }
@@ -224,27 +261,27 @@ Route::post('review/edit/action', function () {
     $rating = request('rating');
     $review = request('review');
 
-    $odd_num_eliminated_username = odd_num_eliminated_username($username);
-    if ($odd_num_eliminated_username !== $username) {
-        $usernameModifiedMessage = "Username was changed to $odd_num_eliminated_username";
-        session()->flash('username_changed', "Username was changed from '$username' to '$odd_num_eliminated_username' due to containg odd number.");
+    $validated_username = remove_odd_number($username);
+    if ($validated_username !== $username) {
+        $usernameModifiedMessage = "Username was changed to $validated_username";
+        session()->flash('username_changed', "Username was changed from '$username' to '$validated_username' due to containg odd number.");
     }
 
     $errors = [];
-    if (strlen($odd_num_eliminated_username) <= 2 || preg_match('/[-_+]/', $odd_num_eliminated_username)) {
+    if (strlen($validated_username) <= 2 || preg_match('/[-_+]/', $validated_username)) {
         $errors['username'] = 'Username must have more than 2 characters and cannot have the following symbols: -, _, +';
     }
     if (count($errors) > 0) {
-        return redirect(url("review/$id/edit"))->withErrors($errors)->withInput(['username' => $odd_num_eliminated_username, 'rating' => $rating, 'review' => $review]);
+        return redirect(url("review/$id/edit"))->withErrors($errors)->withInput(['username' => $validated_username, 'rating' => $rating, 'review' => $review]);
     }
 
-    $exisiting_review = check_user_multiple_review($item_id, $odd_num_eliminated_username);
+    $exisiting_review = check_user_multiple_review($item_id, $validated_username);
     if ($exisiting_review && $exisiting_review != $id) {
         session()->flash('exisiting_review', 'Review already exists for this user.');
         return redirect(url("item/$item_id"));
     }
 
-    $item_id = edit_review($id, $odd_num_eliminated_username, $rating, $review);
+    $item_id = edit_review($id, $validated_username, $rating, $review);
     if ($id) {
         return redirect(url("item/$item_id"));
     } else {
@@ -252,10 +289,10 @@ Route::post('review/edit/action', function () {
     }
 });
 
-function edit_review($id, $odd_num_eliminated_username, $rating, $review)
+function edit_review($id, $validated_username, $rating, $review)
 {
     $sql = "update review set name = ?, rating = ?, review = ? where id = ?";
-    $result = DB::update($sql, array($odd_num_eliminated_username, $rating, $review, $id));
+    $result = DB::update($sql, array($validated_username, $rating, $review, $id));
     if ($result) {
         $sql = "select item_id from review where id = ?";
         $reviews = DB::select($sql, array($id));

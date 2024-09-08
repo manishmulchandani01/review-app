@@ -33,6 +33,16 @@
                     <strong>{{ $review->name }}</strong> ({{ $review->rating }}/5) on
                     {{ substr($review->created_at, 0, 10) }}<br>
                     Review: {{ $review->review }}<br>
+                    @if (isset($review->possible_reasons) && $review->possible_reasons)
+                        Possible Fake Review:<br>
+                        <ul>
+                            @foreach ($review->possible_reasons as $reason)
+                                <li>
+                                    {{ $reason }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
                     <a href="{{ url("review/$review->id/edit") }}">Edit Review</a><br>
                 </li>
             @endforeach
